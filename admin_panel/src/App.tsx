@@ -138,7 +138,13 @@ const translations: Record<string, Record<string, string>> = {
     downloadExcel: "Download Excel",
     systemSettings: "System Settings",
     savePreferences: "Save Preferences",
-    welcome: "Welcome, Village Admin"
+    welcome: "Welcome, Village Admin",
+    username: "Username",
+    password: "Password",
+    login: "Log In",
+    loginTitle: "GaavConnect Admin Login",
+    loginSubtitle: "Sign in to access your Gram Panchayat control panel",
+    invalidCredentials: "Invalid username or password"
   },
   mr: {
     dashboard: "डॅशबोर्ड",
@@ -233,7 +239,13 @@ const translations: Record<string, Record<string, string>> = {
     downloadExcel: "Excel डाउनलोड करा",
     systemSettings: "प्रणाली सेटिंग्ज",
     savePreferences: "पसंती जतन करा",
-    welcome: "स्वागत आहे, गाव प्रशासक"
+    welcome: "स्वागत आहे, गाव प्रशासक",
+    username: "वापरकर्ता नाव (Username)",
+    password: "पासवर्ड (Password)",
+    login: "लॉग इन करा",
+    loginTitle: "गावकनेक्ट प्रशासक लॉगिन",
+    loginSubtitle: "तुमच्या ग्रामपंचायत नियंत्रण पॅनेलमध्ये प्रवेश करण्यासाठी साइन इन करा",
+    invalidCredentials: "चुकीचे वापरकर्तानाव किंवा पासवर्ड"
   }
 };
 
@@ -310,6 +322,12 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedVillageFilter, setSelectedVillageFilter] = useState<string>('All');
+  
+  // Login Authentication State
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [usernameInput, setUsernameInput] = useState<string>('');
+  const [passwordInput, setPasswordInput] = useState<string>('');
+  const [loginError, setLoginError] = useState<string>('');
   
   // Data States
   const [villages, setVillages] = useState(initialVillages);
@@ -499,6 +517,79 @@ export default function App() {
   ];
   const PIE_COLORS = ['#ef4444', '#f59e0b', '#10b981'];
 
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-6 transition-colors duration-300">
+        <div className="absolute top-6 right-6 flex gap-4">
+          <button
+            onClick={() => setLang(lang === 'en' ? 'mr' : 'en')}
+            className="btn btn-outline text-xs px-3 py-1.5 font-bold"
+          >
+            {lang === 'en' ? 'मराठी' : 'English'}
+          </button>
+          <button 
+            onClick={() => setDarkMode(!darkMode)}
+            className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900"
+          >
+            {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
+        </div>
+        <div className="glass-card max-w-md w-full p-8 space-y-6">
+          <div className="text-center space-y-2">
+            <div className="bg-gradient-to-tr from-blue-600 to-emerald-600 p-3 rounded-2xl text-white shadow-md w-fit mx-auto">
+              <FileCode className="w-8 h-8" />
+            </div>
+            <h2 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-emerald-500 bg-clip-text text-transparent">{t('loginTitle')}</h2>
+            <p className="text-xs text-slate-400">{t('loginSubtitle')}</p>
+          </div>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            if (usernameInput === 'admin' && passwordInput === 'password') {
+              setIsLoggedIn(true);
+              setLoginError('');
+            } else {
+              setLoginError(t('invalidCredentials'));
+            }
+          }} className="space-y-4">
+            {loginError && (
+              <div className="bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 p-3 rounded-xl text-xs font-semibold border border-rose-100 dark:border-rose-950">
+                {loginError}
+              </div>
+            )}
+            <div>
+              <label className="text-xs font-semibold block mb-1.5">{t('username')}</label>
+              <input
+                type="text"
+                value={usernameInput}
+                onChange={(e) => setUsernameInput(e.target.value)}
+                placeholder="e.g. admin"
+                className="w-full"
+                required
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold block mb-1.5">{t('password')}</label>
+              <input
+                type="password"
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                placeholder="••••••••"
+                className="w-full"
+                required
+              />
+            </div>
+            <button type="submit" className="btn btn-primary w-full py-2.5 font-bold">
+              {t('login')}
+            </button>
+            <div className="text-center pt-2 text-[10px] text-slate-400">
+              Default credentials: <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">admin</code> / <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">password</code>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
       
@@ -576,7 +667,11 @@ export default function App() {
           </div>
           
           <button 
-            onClick={() => alert("Simulating Logout...")}
+            onClick={() => {
+              setIsLoggedIn(false);
+              setUsernameInput('');
+              setPasswordInput('');
+            }}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all"
           >
             <LogOut className="w-5 h-5" />
